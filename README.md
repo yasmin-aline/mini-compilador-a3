@@ -2,6 +2,11 @@
 
 ---
 
+- Analisador Léxico -> Guilherme
+- Abalisador Sintático -> Yasmin e Thiago
+- Analisador Semântico -> Nicolas e Alex
+- Geração de código
+
 ## 1. Requisitos do Projeto 
 
 ### Especificações da Aplicação
