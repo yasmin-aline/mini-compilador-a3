@@ -3,7 +3,7 @@
 ---
 
 - Analisador Léxico -> Guilherme
-- Abalisador Sintático -> Yasmin e Thiago
+- Analisador Sintático -> Yasmin e Thiago
 - Analisador Semântico -> Nicolas e Alex
 - Geração de código
 
