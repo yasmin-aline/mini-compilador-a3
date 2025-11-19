@@ -78,3 +78,62 @@ if (x > 5) {
 
 ![](docs/arquitetura-compilador.excalidraw.png)
 
+## 3. Fluxo da Análise Sintática
+
+### Pipeline léxico → sintático
+1. **`AnalisadorLexico`** lê o código-fonte e produz uma lista ordenada de tokens. Cada token carrega tipo (`TipoToken`) e lexema original.
+2. **`Parser`** consome essa lista e aplica uma gramática LL recursiva, construindo uma **AST (Abstract Syntax Tree)** composta pelos nós `Stmt` (declarações/comandos) e `Expr` (expressões).
+3. **`AstPrinter`** visita a AST e gera uma representação textual pra debug.
+
+### Estrutura do Parser
+- Entrada principal: `parsePrograma()` → retorna `List<Stmt>` onde cada elemento representa uma declaração de alto nível.
+- Gramática implementada:
+  - Declarações: `varDecl`, `statement` (print, if/else, while, blocos, expressão terminada por `;`).
+  - Expressões: `assignment → logicOr → logicAnd → equality → comparison → term → factor → unary → primary` com as precedências clássicas (`=` mais fraco, `* / %` mais forte).
+- Validação de operadores por tipo **e** lexema (helper `matchOp`) evita consumir tokens incorretos.
+- Erros sintáticos lançam `RuntimeException` com mensagens descritivas (ex.: parêntese não fechado, atribuição inválida).
+
+### AST (`Stmt` e `Expr`)
+- `Stmt.Var`, `Stmt.Print`, `Stmt.If`, `Stmt.While`, `Stmt.Block`, `Stmt.ExprStmt` mapeiam diretamente cada construção suportada.
+- `Expr.Literal`, `Expr.Variable`, `Expr.Grouping`, `Expr.Unary`, `Expr.Binary`, `Expr.Logical` descrevem árvores de expressão.
+- Ambos usam o padrão Visitor para que futuras fases (intérprete, geração de código) percorram a AST de forma tipada.
+
+### Execução e logs
+- `Main` aceita dois modos:
+  1. `java -cp target/classes org.example.Main <arquivo>` para processar um arquivo.
+  2. `java -cp target/classes org.example.Main` para entrar no modo interativo (finalize com `EOF`).
+- Durante a execução são exibidos logs `[INFO]` mostrando tokens, resumo por tipo, início/fim do parsing e a AST resultante (`[n] ...`).
+
+### Testes unitários
+- `mvn test` executa:
+  - `AnalisadorLexicoTest`: garante que tokens são gerados corretamente (inline + arquivo de exemplo).
+  - `ParserTest`: cobre declarações, blocos, `if/else`, `while`, precedência aritmética/lógica, erros sintáticos e a saída textual da AST.
+- Esses testes exercitam o pipeline completo (lexer+parser+AST) e servem de regressão para novas features.
+
+## Fluxograma do pipeline atual
+
+```mermaid
+flowchart TD
+    A[Entrada
+(arquivo ou interativo)] --> B[Main.processarFonte]
+    B --> C[AnalisadorLexico.analisar
+(List<Token>)]
+    C --> D[Parser.parsePrograma
+(List<Stmt>)]
+    D --> E[AST
+(Stmt/Expr)]
+    E --> F[AstPrinter.print]
+
+    B -.-> L[[Logs [INFO]]]
+    C -.-> L
+    D -.-> L
+    F -.-> L
+
+    subgraph Testes unitários
+        T1[AnalisadorLexicoTest]
+        T2[ParserTest]
+    end
+    C --> T1
+    D --> T2
+```
+
