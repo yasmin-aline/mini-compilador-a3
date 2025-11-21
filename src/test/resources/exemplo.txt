@@ -1,0 +1,14 @@
+int x = 10;
+real y = 3.14;
+string nome = "teste";
+
+if (x > 5) {
+    print("x é maior que 5");
+} else {
+    print("x é menor ou igual a 5");
+}
+
+while (x > 0) {
+    x = x - 1;
+    print(x);
+}
