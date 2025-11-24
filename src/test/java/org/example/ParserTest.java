@@ -21,7 +21,7 @@ public class ParserTest {
 
     private List<Stmt> parse(String codigo) {
         Parser parser = new Parser(tokensFrom(codigo));
-        return parser.parsePrograma();
+        return parser.analisar();
     }
 
     private String astSummary(String codigo) {

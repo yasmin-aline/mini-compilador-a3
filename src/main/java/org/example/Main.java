@@ -11,6 +11,8 @@ import org.example.lexico.AnalisadorLexico;
 import org.example.sintatico.Parser;
 import org.example.sintatico.Stmt;
 import org.example.sintatico.AstPrinter;
+import org.example.semantico.AnalisadorSemantico;
+import org.example.Interpretador;
 
 public class Main {
     public static void main(String[] args) {
@@ -85,7 +87,7 @@ public class Main {
 
         System.out.println("[INFO] Iniciando parsing...");
         Parser parser = new Parser(tokens);
-        List<Stmt> programa = parser.parsePrograma();
+        List<Stmt> programa = parser.analisar();
         System.out.println("[INFO] Parsing concluído. Total de declarações: " + programa.size());
 
         AstPrinter printer = new AstPrinter();
@@ -94,6 +96,16 @@ public class Main {
         for (Stmt s : programa) {
             System.out.println("   [" + stmtIdx++ + "] " + printer.print(s));
         }
+
+        System.out.println("[INFO] Iniciando Análise Semântica...");
+        AnalisadorSemantico semantico = new AnalisadorSemantico();
+        semantico.analisar(programa);
+        System.out.println("[INFO] Semântica OK!");
+
+        System.out.println("[INFO] Iniciando execução do programa...");
+        Interpretador interpretador = new Interpretador();
+        interpretador.executar(programa);
+        System.out.println("[INFO] Execução finalizada.");
 
         System.out.println("[INFO] Fluxo completo finalizado.");
     }

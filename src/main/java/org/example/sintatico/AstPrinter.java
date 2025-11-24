@@ -27,6 +27,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     }
 
     @Override
+    public String visitRead(Stmt.Read stmt) {
+        return "read(" + stmt.name + ")";
+    }
+
+    @Override
     public String visitBlock(Stmt.Block stmt) {
         StringBuilder sb = new StringBuilder();
         sb.append("block{");

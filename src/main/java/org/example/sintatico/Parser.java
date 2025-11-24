@@ -2,271 +2,285 @@ package org.example.sintatico;
 
 import org.example.lexico.AnalisadorLexico.Token;
 import org.example.lexico.AnalisadorLexico.TipoToken;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
     private final List<Token> tokens;
-    private int current = 0;
+    private int posicaoAtual = 0;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
-    public List<Stmt> parsePrograma() {
-        List<Stmt> statements = new ArrayList<>();
-        while (!isAtEnd()) {
-            statements.add(declaracao());
+    public List<Stmt> analisar() {
+        List<Stmt> declaracoes = new ArrayList<>();
+        while (!fimDoArquivo()) {
+            declaracoes.add(declaracao());
         }
-        return statements;
+        return declaracoes;
     }
 
     private Stmt declaracao() {
-        if (match(TipoToken.PC_INT, TipoToken.PC_REAL, TipoToken.PC_STRING)) {
-            String tipo = previous().lexema;
-            return varDecl(tipo);
+        if (verificar(TipoToken.PC_INT) || verificar(TipoToken.PC_REAL) || 
+            verificar(TipoToken.PC_STRING)) {
+            return declaracaoVariavel();
         }
-        return statement();
+        return comando();
     }
 
-    private Stmt varDecl(String tipo) {
-        String name = consume(TipoToken.ID, "Esperado nome de variável após tipo.").lexema;
-        Expr initializer = null;
-        if (match(TipoToken.OP_ATRIB)) {
-            initializer = expression();
+    private Stmt declaracaoVariavel() {
+        String tipo = consumir().lexema;
+        Token nome = consumir(TipoToken.ID, "Esperado nome de variável");
+        
+        Expr inicializacao = null;
+        if (verificar(TipoToken.OP_ATRIB)) {
+            consumir();
+            inicializacao = expressao();
         }
-        consumeDelim(";");
-        return new Stmt.Var(tipo, name, initializer);
+        
+        consumirDelimitador(";");
+        return new Stmt.Var(tipo, nome.lexema, inicializacao);
     }
 
-    private Stmt statement() {
-        if (match(TipoToken.PC_PRINT)) return printStmt();
-        if (match(TipoToken.PC_IF)) return ifStmt();
-        if (match(TipoToken.PC_WHILE)) return whileStmt();
-        if (checkDelim("{")) return block();
-        return exprStmt();
+    private Stmt comando() {
+        if (verificar(TipoToken.PC_PRINT)) return comandoPrint();
+        if (verificar(TipoToken.PC_READ)) return comandoRead();
+        if (verificar(TipoToken.PC_IF)) return comandoIf();
+        if (verificar(TipoToken.PC_WHILE)) return comandoWhile();
+        if (verificarDelimitador("{")) return bloco();
+        return comandoExpressao();
     }
 
-    private Stmt printStmt() {
-        consumeDelim("(");
-        Expr value = expression();
-        consumeDelim(")");
-        consumeDelim(";");
-        return new Stmt.Print(value);
+    private Stmt comandoPrint() {
+        consumir(TipoToken.PC_PRINT, "Esperado 'print'");
+        consumirDelimitador("(");
+        Expr valor = expressao();
+        consumirDelimitador(")");
+        consumirDelimitador(";");
+        return new Stmt.Print(valor);
     }
 
-    private Stmt ifStmt() {
-        consumeDelim("(");
-        Expr cond = expression();
-        consumeDelim(")");
-        Stmt thenBranch = statement();
-        Stmt elseBranch = null;
-        if (match(TipoToken.PC_ELSE)) {
-            elseBranch = statement();
+    private Stmt comandoRead() {
+        consumir(TipoToken.PC_READ, "Esperado 'read'");
+        consumirDelimitador("(");
+        Token nome = consumir(TipoToken.ID, "Esperado nome de variável em read");
+        consumirDelimitador(")");
+        consumirDelimitador(";");
+        return new Stmt.Read(nome.lexema);
+    }
+
+    private Stmt comandoIf() {
+        consumir(TipoToken.PC_IF, "Esperado 'if'");
+        consumirDelimitador("(");
+        Expr condicao = expressao();
+        consumirDelimitador(")");
+        
+        Stmt ramoEntao = comando();
+        Stmt ramoSenao = null;
+        
+        if (verificar(TipoToken.PC_ELSE)) {
+            consumir();
+            ramoSenao = comando();
         }
-        return new Stmt.If(cond, thenBranch, elseBranch);
+        
+        return new Stmt.If(condicao, ramoEntao, ramoSenao);
     }
 
-    private Stmt whileStmt() {
-        consumeDelim("(");
-        Expr cond = expression();
-        consumeDelim(")");
-        Stmt body = statement();
-        return new Stmt.While(cond, body);
+    private Stmt comandoWhile() {
+        consumir(TipoToken.PC_WHILE, "Esperado 'while'");
+        consumirDelimitador("(");
+        Expr condicao = expressao();
+        consumirDelimitador(")");
+        Stmt corpo = comando();
+        return new Stmt.While(condicao, corpo);
     }
 
-    private Stmt.Block block() {
-        consumeDelim("{");
-        List<Stmt> statements = new ArrayList<>();
-        while (!checkDelim("}") && !isAtEnd()) {
-            statements.add(declaracao());
+    private Stmt.Block bloco() {
+        consumirDelimitador("{");
+        List<Stmt> comandos = new ArrayList<>();
+        while (!verificarDelimitador("}") && !fimDoArquivo()) {
+            comandos.add(declaracao());
         }
-        consumeDelim("}");
-        return new Stmt.Block(statements);
+        consumirDelimitador("}");
+        return new Stmt.Block(comandos);
     }
 
-    private Stmt exprStmt() {
-        Expr expr = expression();
-        consumeDelim(";");
+    private Stmt comandoExpressao() {
+        Expr expr = expressao();
+        consumirDelimitador(";");
         return new Stmt.ExprStmt(expr);
     }
 
-    private Expr expression() {
-        return assignment();
+    private Expr expressao() {
+        return atribuicao();
     }
 
-    private Expr assignment() {
-        Expr expr = logicOr();
-        if (match(TipoToken.OP_ATRIB)) {
+    private Expr atribuicao() {
+        Expr expr = ouLogico();
+        
+        if (verificar(TipoToken.OP_ATRIB)) {
+            Token igual = consumir();
+            Expr valor = atribuicao();
+            
             if (expr instanceof Expr.Variable) {
-                Expr value = assignment();
-                return new Expr.Binary(expr, "=", value);
-            } else {
-                error("Atribuição à expressão não é permitida.");
+                return new Expr.Binary(expr, igual.lexema, valor);
             }
+            throw new RuntimeException("Alvo de atribuição inválido");
         }
+        
         return expr;
     }
 
-    private Expr logicOr() {
-        Expr expr = logicAnd();
-        while (matchOp(TipoToken.OP_LOGICO, "||")) {
-            String op = previous().lexema;
-            Expr right = logicAnd();
-            expr = new Expr.Logical(expr, op, right);
+    private Expr ouLogico() {
+        Expr expr = eLogico();
+        
+        while (verificar(TipoToken.OP_LOGICO) && verificarLexemaAtual("||")) {
+            Token operador = consumir();
+            Expr direita = eLogico();
+            expr = new Expr.Logical(expr, operador.lexema, direita);
         }
+        
         return expr;
     }
 
-    private Expr logicAnd() {
-        Expr expr = equality();
-        while (matchOp(TipoToken.OP_LOGICO, "&&")) {
-            String op = previous().lexema;
-            Expr right = equality();
-            expr = new Expr.Logical(expr, op, right);
+    private Expr eLogico() {
+        Expr expr = igualdade();
+        
+        while (verificar(TipoToken.OP_LOGICO) && verificarLexemaAtual("&&")) {
+            Token operador = consumir();
+            Expr direita = igualdade();
+            expr = new Expr.Logical(expr, operador.lexema, direita);
         }
+        
         return expr;
     }
 
-    private Expr equality() {
-        Expr expr = comparison();
-        while (matchOp(TipoToken.OP_REL, "==", "!=")) {
-            String op = previous().lexema;
-            Expr right = comparison();
-            expr = new Expr.Binary(expr, op, right);
+    private Expr igualdade() {
+        Expr expr = comparacao();
+        
+        while (verificar(TipoToken.OP_REL) && 
+               (verificarLexemaAtual("==") || verificarLexemaAtual("!="))) {
+            Token operador = consumir();
+            Expr direita = comparacao();
+            expr = new Expr.Binary(expr, operador.lexema, direita);
         }
+        
         return expr;
     }
 
-    private Expr comparison() {
-        Expr expr = term();
-        while (matchOp(TipoToken.OP_REL, ">", "<")) {
-            String op = previous().lexema;
-            Expr right = term();
-            expr = new Expr.Binary(expr, op, right);
+    private Expr comparacao() {
+        Expr expr = termo();
+        
+        while (verificar(TipoToken.OP_REL) && 
+               (verificarLexemaAtual(">") || verificarLexemaAtual("<") || 
+                verificarLexemaAtual(">=") || verificarLexemaAtual("<="))) {
+            Token operador = consumir();
+            Expr direita = termo();
+            expr = new Expr.Binary(expr, operador.lexema, direita);
         }
+        
         return expr;
     }
 
-    private Expr term() {
-        Expr expr = factor();
-        while (matchOp(TipoToken.OP_ARIT, "+", "-")) {
-            String op = previous().lexema;
-            Expr right = factor();
-            expr = new Expr.Binary(expr, op, right);
+    private Expr termo() {
+        Expr expr = fator();
+        
+        while (verificar(TipoToken.OP_ARIT) && 
+               (verificarLexemaAtual("+") || verificarLexemaAtual("-"))) {
+            Token operador = consumir();
+            Expr direita = fator();
+            expr = new Expr.Binary(expr, operador.lexema, direita);
         }
+        
         return expr;
     }
 
-    private Expr factor() {
-        Expr expr = unary();
-        while (matchOp(TipoToken.OP_ARIT, "*", "/", "%")) {
-            String op = previous().lexema;
-            Expr right = unary();
-            expr = new Expr.Binary(expr, op, right);
+    private Expr fator() {
+        Expr expr = unario();
+        
+        while (verificar(TipoToken.OP_ARIT) && 
+               (verificarLexemaAtual("*") || verificarLexemaAtual("/") || 
+                verificarLexemaAtual("%"))) {
+            Token operador = consumir();
+            Expr direita = unario();
+            expr = new Expr.Binary(expr, operador.lexema, direita);
         }
+        
         return expr;
     }
 
-    private Expr unary() {
-        if (match(TipoToken.OP_ARIT) && previous().lexema.equals("-")) {
-            return new Expr.Unary("-", unary());
+    private Expr unario() {
+        if (verificar(TipoToken.OP_ARIT) && verificarLexemaAtual("-")) {
+            Token operador = consumir();
+            Expr direita = unario();
+            return new Expr.Unary(operador.lexema, direita);
         }
-        return call();
+        return primario();
     }
 
-    private Expr call() {
-        return primary();
-    }
-
-    private Expr primary() {
-        if (match(TipoToken.NUM_INT, TipoToken.NUM_REAL)) {
-            return new Expr.Literal(previous().lexema);
+    private Expr primario() {
+        if (verificar(TipoToken.NUM_INT) || verificar(TipoToken.NUM_REAL) || 
+            verificar(TipoToken.TEXTO_STRING)) {
+            return new Expr.Literal(consumir().lexema);
         }
-        if (match(TipoToken.TEXTO_STRING)) {
-            return new Expr.Literal(previous().lexema);
+        
+        if (verificar(TipoToken.ID)) {
+            return new Expr.Variable(consumir().lexema);
         }
-        if (match(TipoToken.ID)) {
-            return new Expr.Variable(previous().lexema);
-        }
-        if (checkDelim("(")) {
-            consumeDelim("(");
-            Expr expr = expression();
-            consumeDelim(")");
+        
+        if (verificarDelimitador("(")) {
+            consumirDelimitador("(");
+            Expr expr = expressao();
+            consumirDelimitador(")");
             return new Expr.Grouping(expr);
         }
-        error("Expressão primária inválida.");
-        return null;
+        
+        throw new RuntimeException("Expressão inesperada: " + atual().tipo);
     }
 
-    private boolean matchOp(TipoToken tipo, String... lexemas) {
-        if (!check(tipo)) return false;
-        String atual = peek().lexema;
-        for (String lexema : lexemas) {
-            if (lexema.equals(atual)) {
-                advance();
-                return true;
-            }
+    private Token consumir(TipoToken tipo, String mensagemErro) {
+        if (verificar(tipo)) return consumir();
+        throw new RuntimeException(mensagemErro);
+    }
+
+    private void consumirDelimitador(String delimitador) {
+        if (verificarDelimitador(delimitador)) {
+            consumir();
+            return;
         }
-        return false;
+        throw new RuntimeException("Esperado delimitador: " + delimitador);
     }
 
-    private boolean match(TipoToken... types) {
-        for (TipoToken t : types) {
-            if (check(t)) { advance(); return true; }
-        }
-        return false;
+    private boolean verificar(TipoToken tipo) {
+        if (fimDoArquivo()) return false;
+        return atual().tipo == tipo;
     }
 
-    private boolean check(TipoToken type) {
-        if (isAtEnd()) return false;
-        return peek().tipo == type;
+    private boolean verificarDelimitador(String valor) {
+        if (fimDoArquivo()) return false;
+        return atual().tipo == TipoToken.DELIM && atual().lexema.equals(valor);
     }
 
-    private Token advance() {
-        if (!isAtEnd()) current++;
-        return previous();
+    private boolean verificarLexemaAtual(String valor) {
+        if (fimDoArquivo()) return false;
+        return atual().lexema.equals(valor);
     }
 
-    private boolean isAtEnd() {
-        return peek().tipo == TipoToken.EOF;
+    private Token consumir() {
+        if (!fimDoArquivo()) posicaoAtual++;
+        return anterior();
     }
 
-    private Token peek() {
-        return tokens.get(current);
+    private boolean fimDoArquivo() {
+        return atual().tipo == TipoToken.EOF;
     }
 
-    private Token previous() {
-        return tokens.get(current - 1);
+    private Token atual() {
+        return tokens.get(posicaoAtual);
     }
 
-    private void error(String msg) {
-        throw new RuntimeException("Erro sintático: " + msg);
-    }
-
-    private boolean matchDelim(String lexema) {
-        if (!isAtEnd() && peek().tipo == TipoToken.DELIM && lexema.equals(peek().lexema)) {
-            advance();
-            return true;
-        }
-        return false;
-    }
-
-    private boolean checkDelim(String lexema) {
-        if (isAtEnd()) return false;
-        return peek().tipo == TipoToken.DELIM && lexema.equals(peek().lexema);
-    }
-
-    private void consumeDelim(String lexema) {
-        if (!matchDelim(lexema)) {
-            error("Esperado delimitador '" + lexema + "'.");
-        }
-    }
-
-    private Token consume(TipoToken type, String message) {
-        if (check(type)) return advance();
-        error(message);
-        return null;
+    private Token anterior() {
+        return tokens.get(posicaoAtual - 1);
     }
 }

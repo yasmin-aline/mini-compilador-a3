@@ -7,6 +7,7 @@ public abstract class Stmt {
         R visitVar(Var stmt);
         R visitExprStmt(ExprStmt stmt);
         R visitPrint(Print stmt);
+        R visitRead(Read stmt);
         R visitBlock(Block stmt);
         R visitIf(If stmt);
         R visitWhile(While stmt);
@@ -34,6 +35,12 @@ public abstract class Stmt {
         public final Expr expression;
         public Print(Expr expression) { this.expression = expression; }
         public <R> R accept(Visitor<R> visitor) { return visitor.visitPrint(this); }
+    }
+
+    public static class Read extends Stmt {
+        public final String name;
+        public Read(String name) { this.name = name; }
+        public <R> R accept(Visitor<R> visitor) { return visitor.visitRead(this); }
     }
 
     public static class Block extends Stmt {

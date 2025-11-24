@@ -123,6 +123,8 @@ public class AnalisadorLexico {
         if (c == '!' && proximo == '=') { pos += 2; return new Token(TipoToken.OP_REL, "!="); }
         if (c == '&' && proximo == '&') { pos += 2; return new Token(TipoToken.OP_LOGICO, "&&"); }
         if (c == '|' && proximo == '|') { pos += 2; return new Token(TipoToken.OP_LOGICO, "||"); }
+        if (c == '>' && proximo == '=') { pos += 2; return new Token(TipoToken.OP_REL, ">="); }
+        if (c == '<' && proximo == '=') { pos += 2; return new Token(TipoToken.OP_REL, "<="); }
 
         pos++;
         switch (c) {
