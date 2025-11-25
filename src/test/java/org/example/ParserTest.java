@@ -45,7 +45,7 @@ public class ParserTest {
         assertEquals("int", varDecl.typeKeyword);
         assertEquals("x", varDecl.name);
         Expr.Literal init = assertInstanceOf(Expr.Literal.class, varDecl.initializer);
-        assertEquals("10", init.value);
+        assertEquals(10, init.value);
 
         Stmt.ExprStmt assignStmt = assertInstanceOf(Stmt.ExprStmt.class, stmts.get(1));
         Expr.Binary assignExpr = assertInstanceOf(Expr.Binary.class, assignStmt.expression);
@@ -55,7 +55,7 @@ public class ParserTest {
         assertEquals("+", addExpr.operator);
         assertInstanceOf(Expr.Variable.class, addExpr.left);
         Expr.Literal addLiteral = assertInstanceOf(Expr.Literal.class, addExpr.right);
-        assertEquals("1", addLiteral.value);
+        assertEquals(1, addLiteral.value);
 
         Stmt.Print printStmt = assertInstanceOf(Stmt.Print.class, stmts.get(2));
         assertInstanceOf(Expr.Variable.class, printStmt.expression);
@@ -115,7 +115,7 @@ public class ParserTest {
         Expr.Binary plus = assertInstanceOf(Expr.Binary.class, minus.left);
         assertEquals("+", plus.operator);
         Expr.Literal literalOne = assertInstanceOf(Expr.Literal.class, plus.left);
-        assertEquals("1", literalOne.value);
+        assertEquals(1, literalOne.value);
         Expr.Binary mult = assertInstanceOf(Expr.Binary.class, plus.right);
         assertEquals("*", mult.operator);
 
