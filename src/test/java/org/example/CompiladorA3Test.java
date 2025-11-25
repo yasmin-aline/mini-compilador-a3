@@ -504,6 +504,5 @@ class CompiladorA3Test {
                 "}"
         );
         assertDoesNotThrow(() -> compilarEExecutar(fonte));
-        // 10 é par, então deve imprimir 1 (não 0)
     }
 }

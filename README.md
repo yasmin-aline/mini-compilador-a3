@@ -110,3 +110,85 @@ if (x > 5) {
   - `ParserTest`: cobre declarações, blocos, `if/else`, `while`, precedência aritmética/lógica, erros sintáticos e a saída textual da AST.
 - Esses testes exercitam o pipeline completo (lexer+parser+AST) e servem de regressão para novas features.
 
+
+---
+## Fluxo atual: 
+
+```mermaid
+
+graph TD
+    A[Código Fonte] --> B[Análise Léxica]
+    B --> C[Tokens]
+    C --> D[Análise Sintática]
+    D --> E[AST]
+    E --> F[Análise Semântica]
+    F --> G[AST Validada]
+    G --> H[Geração de Código]
+    H --> I[Código Intermediário]
+    I --> J[Interpretador]
+    J --> K[Saída]
+```
+
+---
+
+## Componentes Principais
+
+### 1. Analisador Léxico
+* **Arquivo:** `AnalisadorLexico.java`
+* **Responsabilidades:**
+    * Tokenização do código fonte.
+    * Reconhecimento de palavras-chave e símbolos.
+    * Geração de tokens.
+
+### 2. Analisador Sintático
+* **Arquivo:** `Parser.java`
+* **Responsabilidades:**
+    * Parser descendente recursivo.
+    * Construção da AST (Abstract Syntax Tree).
+    * Validação da estrutura gramatical.
+
+### 3. Analisador Semântico
+* **Arquivo:** `AnalisadorSemantico.java`
+* **Responsabilidades:**
+    * Verificação de tipos.
+    * Gerenciamento da Tabela de Símbolos.
+    * Validação de escopo.
+
+
+
+### 4. Gerador de Código
+* **Arquivo:** `GeradorDeCodigo.java`
+* **Responsabilidades:**
+    * Geração de código intermediário (IC).
+    * Criação de instruções de três endereços.
+    * Controle de fluxo com labels.
+
+### 5. Interpretadores
+
+**Interpretador IC**
+* **Arquivo:** `InterpretadorIC.java`
+* **Funcionalidade:**
+    * Executa o código intermediário gerado.
+    * Gerencia a pilha de execução.
+    * Processa estruturas de controle.
+
+**Interpretador de Expressões**
+* **Funcionalidade:**
+    * Executa expressões aritméticas diretamente da AST.
+    * Útil para avaliação imediata de expressões.
+    * Retorna resultados sem gerar código intermediário.
+
+---
+
+## 4.2 Fluxo de Execução
+
+1.  **Análise:** O código fonte é analisado e convertido em uma **AST**.
+2.  **Decisão de Processamento:** A AST pode seguir dois caminhos:
+    * **Interpretação Direta:** Para expressões aritméticas simples (via Interpretador de Expressões).
+    * **Compilação:** Para programas completos, gerando **Código Intermediário (IC)**.
+3.  **Execução:**
+    * O código intermediário é executado pelo **Interpretador IC**.
+    * Expressões simples podem ser avaliadas e retornadas imediatamente.
+
+---
+

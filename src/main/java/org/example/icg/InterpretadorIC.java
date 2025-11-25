@@ -18,10 +18,10 @@ public class InterpretadorIC {
     }
 
     public void executar() {
-        int pc = 0; // Program Counter
+        int pc = 0; 
         while (pc < codigo.size()) {
             Instrucao instrucao = codigo.get(pc);
-            pc++; // Avança o contador de programa
+            pc++; 
 
             switch (instrucao.opCode) {
                 case PUSH:
@@ -189,11 +189,9 @@ public class InterpretadorIC {
                     if (pilha.isEmpty()) {
                         throw new RuntimeException("Pilha vazia para operação JMPT");
                     }
-                    // Para operadores lógicos: se true, mantém o valor e pula
                     if (eVerdadeiro(pilha.peek())) {
                         pc = encontrarLabel((String) instrucao.operando);
                     } else {
-                        // Se false, remove o valor (será substituído pelo lado direito)
                         pilha.pop();
                     }
                     break;
@@ -202,11 +200,9 @@ public class InterpretadorIC {
                     if (pilha.isEmpty()) {
                         throw new RuntimeException("Pilha vazia para operação JMPF");
                     }
-                    // Para operadores lógicos: se false, mantém o valor e pula
                     if (!eVerdadeiro(pilha.peek())) {
                         pc = encontrarLabel((String) instrucao.operando);
                     } else {
-                        // Se true, remove o valor (será substituído pelo lado direito)
                         pilha.pop();
                     }
                     break;
@@ -232,7 +228,6 @@ public class InterpretadorIC {
                     System.out.println("[INFO] Execução do Código Intermediário finalizada.");
                     return;
                 case LABEL:
-                    // Labels são apenas marcadores e não fazem nada durante a execução
                     break;
                 default:
                     throw new RuntimeException("OpCode desconhecido: " + instrucao.opCode);
@@ -244,7 +239,7 @@ public class InterpretadorIC {
         for (int i = 0; i < codigo.size(); i++) {
             Instrucao inst = codigo.get(i);
             if (inst.opCode == Instrucao.OpCode.LABEL && label.equals(inst.operando)) {
-                return i + 1; // ✅ Retorna a próxima instrução após a label
+                return i + 1; 
             }
         }
         throw new RuntimeException("Label não encontrada: " + label);

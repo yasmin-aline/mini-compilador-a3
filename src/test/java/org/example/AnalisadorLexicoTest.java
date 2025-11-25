@@ -28,15 +28,12 @@ public class AnalisadorLexicoTest {
         AnalisadorLexico lexer = new AnalisadorLexico(codigo);
         List<AnalisadorLexico.Token> tokens = lexer.analisar();
         
-        // Verifica se existem tokens
         assertFalse(tokens.isEmpty(), "A lista de tokens não deve estar vazia");
         
-        // Verifica se o último token é EOF
         assertEquals(AnalisadorLexico.TipoToken.EOF, 
                     tokens.get(tokens.size() - 1).tipo,
                     "O último token deve ser EOF");
         
-        // Imprime os tokens para depuração
         System.out.println("\nTokens encontrados (" + tokens.size() + "):");
         for (AnalisadorLexico.Token token : tokens) {
             System.out.println(token);
@@ -45,7 +42,6 @@ public class AnalisadorLexicoTest {
     
     @Test
     public void testAnalisarArquivo() {
-        // Caminho para um arquivo de teste
         String caminhoArquivo = "src/test/resources/exemplo.txt";
         
         try {

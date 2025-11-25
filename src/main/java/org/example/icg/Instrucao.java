@@ -5,11 +5,11 @@ public class Instrucao {
         PUSH, POP,
         LOAD, STORE,
         ADD, SUB, MUL, DIV, MOD,
-        NEG,  // Operador unário de negação
+        NEG,  
         EQ, NEQ, GT, LT, GTE, LTE,
         AND, OR, NOT,
         JMP, JMPT, JMPF,
-        LABEL,  // Marcador de posição para saltos
+        LABEL, 
         READ, PRINT,
         HALT
     }
