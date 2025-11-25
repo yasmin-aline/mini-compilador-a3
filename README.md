@@ -190,5 +190,3 @@ graph TD
     * O código intermediário é executado pelo **Interpretador IC**.
     * Expressões simples podem ser avaliadas e retornadas imediatamente.
 
----
-
