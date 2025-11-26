@@ -106,6 +106,6 @@ public String gerarClasseJava(java.util.List<Stmt> statements) {
 
 @Override
     public String visitRead(Stmt.Read stmt) {
-        return "        " + stmt.name + " = scanner.nextInt();\n"; 
+        return "        " + stmt.name + " = scanner.nextDouble();\n"; 
     }
 }

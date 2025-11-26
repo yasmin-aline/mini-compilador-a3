@@ -1,5 +1,54 @@
-int a = 10;
-real b = 20.5;
-if (a < b) {
-    print("Teste");
+print("=== Calculadora de IMC ===");
+print("Digite seu peso em kg:");
+real peso;
+read(peso);
+
+print("Digite sua altura em metros:");
+real altura;
+read(altura);
+
+print("=== Calculando IMC ===");
+real imc;
+imc = peso / (altura * altura);
+
+print("=== Resultado ===");
+print("Seu IMC calculado:");
+print(imc);
+
+print("=== Classificacao ===");
+if (imc < 18.5) {
+    print("Abaixo do peso");
+} else {
+    if (imc < 25.0) {
+        print("Peso normal");
+    } else {
+        if (imc < 30.0) {
+            print("Sobrepeso");
+        } else {
+            print("Obesidade");
+        }
+    }
 }
+
+print("=== Faixa de Peso Ideal ===");
+real pesoMinimo;
+pesoMinimo = 18.5 * (altura * altura);
+print("Peso minimo recomendado:");
+print(pesoMinimo);
+
+real pesoMaximo;
+pesoMaximo = 24.9 * (altura * altura);
+print("Peso maximo recomendado:");
+print(pesoMaximo);
+
+print("=== Demonstracao de Estruturas ===");
+
+real contador;
+contador = 1.0;
+while (contador < 4.0) {
+    print("Contagem:");
+    print(contador);
+    contador = contador + 1.0;
+}
+
+print("Obrigado por usar a Calculadora de IMC!");

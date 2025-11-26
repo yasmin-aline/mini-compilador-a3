@@ -36,9 +36,95 @@ A linguagem criada deve suportar:
 
 ---
 
-## 2. Especificações da Linguagem 
+## 2. Testes e Exemplos
 
-A linguagem desenvolvida neste projeto foi criada por nós e é **inspirada na sintaxe e estrutura do Java**, porém simplificada.
+### Testes Automatizados
+
+O projeto inclui testes automatizados para validar o funcionamento do compilador. Os testes estão localizados em `src/test/resources/`.
+
+#### Exemplo de Teste (exemplo.txt)
+```kl
+print("=== Calculadora de IMC ===");
+print("Digite seu peso em kg:");
+real peso;
+read(peso);
+
+print("Digite sua altura em metros:");
+real altura;
+read(altura);
+
+// Cálculo do IMC
+real imc = peso / (altura * altura);
+
+print("=== Resultado ===");
+print("Seu IMC calculado:");
+print(imc);
+
+// Estruturas condicionais aninhadas
+if (imc < 18.5) {
+    print("Abaixo do peso");
+} else {
+    if (imc < 25.0) {
+        print("Peso normal");
+    } else {
+        if (imc < 30.0) {
+            print("Sobrepeso");
+        } else {
+            print("Obesidade");
+        }
+    }
+}
+
+// Estrutura de repetição
+print("=== Contagem ===");
+int contador = 1;
+while (contador <= 5) {
+    print("Contagem: ", contador);
+    contador = contador + 1;
+}
+```
+
+### Como Executar os Testes
+
+1. **Executando um arquivo de teste específico:**
+   ```bash
+   mvn exec:java -Dexec.mainClass="org.example.Main" -Dexec.args="caminho/para/teste.kl"
+   ```
+
+2. **Executando o exemplo padrão:**
+   ```bash
+   mvn exec:java -Dexec.mainClass="org.example.Main"
+   ```
+   Isso executará o arquivo `src/test/resources/exemplo.txt` por padrão.
+
+### Saída Esperada
+
+Ao executar o exemplo da calculadora de IMC, o programa irá:
+1. Solicitar o peso em kg
+2. Solicitar a altura em metros
+3. Calcular e exibir o IMC
+4. Classificar o IMC
+5. Mostrar uma contagem de 1 a 5
+
+### Estrutura dos Testes
+
+- `src/test/resources/` - Contém os arquivos de teste
+  - `exemplo.txt` - Exemplo completo demonstrando os recursos da linguagem
+  - `variaveis.kl` - Testes de declaração e atribuição de variáveis
+  - `condicionais.kl` - Testes de estruturas condicionais
+  - `repeticoes.kl` - Testes de estruturas de repetição
+
+### Verificação de Erros
+
+O compilador inclui tratamento de erros para:
+- Caracteres inválidos
+- Tipos incompatíveis
+- Variáveis não declaradas
+- Erros de sintaxe
+
+## 3. Especificações da Linguagem 
+
+A linguagem desenvolvida neste projeto foi criada por nós e é **inspirada na sintaxe do Java e do Python**, porém simplificada.
 
 ### Características principais:
 
@@ -128,3 +214,32 @@ O arquivo `Main` foi configurado para automatizar todo o processo de compilaçã
 3.  **Geração:** O transpilador cria o arquivo físico `ProgramaCompilado.java`.
 4.  **Compilação Dinâmica:** O `Main` invoca o compilador do sistema (`javac`) programaticamente através da biblioteca `javax.tools`.
 5.  **Execução:** Se a compilação for bem-sucedida, o programa compilado é executado automaticamente em um processo separado e a saída é exibida no terminal.
+
+---
+
+# Arquitetura Final 
+
+```mermaid
+graph TD
+    A["Código Fonte<br>"]
+    
+    B["ANÁLISE LÉXICA<br>(AnalisadorLexico.java)<br>• Tokenização<br>• Identificação símbolos"]
+    
+    C["ANÁLISE SINTÁTICA<br>(Parser.java)<br>• Parsing recursivo<br>• Construção da AST"]
+    
+    D["ANÁLISE SEMÂNTICA<br>(AnalisadorSemantico)<br>• Tabela de símbolos<br>• Validação de tipos"]
+    
+    E["GERAÇÃO DE CÓDIGO<br>(GeradorCodigo.java)<br>• Transpilação p/ Java<br>• Visitor Pattern"]
+    
+    F["COMPILAÇÃO JAVA<br>(javac)"]
+    
+    G["EXECUÇÃO<br>(JVM)"]
+
+    A --> B
+    B -->|"Lista de Tokens"| C
+    C -->|"AST (Árvore)"| D
+    D -->|"AST Validada"| E
+    E -->|"Código Java (.java)"| F
+    F -->|"Bytecode (.class)"| G
+
+```
