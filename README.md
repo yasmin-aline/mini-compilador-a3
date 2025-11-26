@@ -43,7 +43,7 @@ A linguagem criada deve suportar:
 O projeto inclui testes automatizados para validar o funcionamento do compilador. Os testes estão localizados em `src/test/resources/`.
 
 #### Exemplo de Teste (exemplo.txt)
-```kl
+```txt
 print("=== Calculadora de IMC ===");
 print("Digite seu peso em kg:");
 real peso;
